@@ -1,0 +1,20 @@
+	
+
+	
+/* 首页产品列表 */
+.ind_proList .item{padding:30rpx 0;border-bottom: 2rpx solid #e7e7e7; align-items: normal;}
+.ind_proList .item .ll{width: 250rpx; height: 166rpx; overflow: hidden;}
+.ind_proList .item .ll image{width: 100%; height: 100%; display: block;}
+.ind_proList .item .rr{width: 420rpx;height: 166rpx;position: relative;}
+.ind_proList .item .title{font-size: 26rpx; line-height: 36rpx;}
+.ind_proList .item .text{font-size: 24rpx;line-height: 32rpx; padding-top: 10rpx;}
+.ind_proList .item .data{position: absolute;bottom: 0;left: 0; width: 100%;box-sizing: border-box; color: #999; font-size: 24rpx;}
+.ind_proList .item .money{position: absolute;bottom: 0;left: 0; width: 100%;box-sizing: border-box; color: #999; font-size: 28rpx;}
+
+	
+	
+	
+	
+	
+	
+	

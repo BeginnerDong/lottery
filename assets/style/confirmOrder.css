@@ -1,0 +1,21 @@
+	/* 数量加减 */
+	.numBox{ width: 260rpx; display: flex; justify-content: flex-end; position: absolute; right: 0; bottom: 0;}
+	.numBox view{ width: 50rpx; height: 44rpx; border-radius: 8rpx;color: #999; font-size:32rpx ; text-align: center; line-height: 44rpx; margin: 0 4rpx; background: #F5F5F5;}
+	.numBox view.num{ width: 70rpx; color: #333; font-size: 28rpx;}
+	
+	.ind_proList .item{padding: 30rpx 4%;}
+	
+	/* 确认订单 */
+	.cfmSetAdrs{padding:30rpx 4%; background: #fff;position:relative;}
+	.cfmSetAdrs .yy-title{width: 20%; font-size: 26rpx;}
+	.cfmSetAdrs .yy-adrs{width: 80%;color: #666; flex-wrap: wrap;}
+	.cfmSetAdrs .yy-adrs .cont{ width: 88%;}
+	.cfmSetAdrs .yy-adrs .arrow{width: 10%;padding: 20rpx 0; display: flex;justify-content: flex-end;}
+	.cfmSetAdrs .yy-adrs .name{ width: 100%; margin-bottom: 10rpx;}
+	
+
+	
+
+
+	
+	
