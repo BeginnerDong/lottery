@@ -66,7 +66,7 @@
         "permission" : {}
     },
     "h5" : {
-        "title" : "模板",
+        "title" : "彩票",
         "devServer" : {
             "https" : false
         },
