@@ -2,10 +2,11 @@
 	<view>
 		
 		<view class="proTopImg flexRowBetween">
-			<view class="item-lis" v-for="(item,index) in produtList" :key="index" @click="Router.navigateTo({route:{path:'/pages/jiFenShopDetail/jiFenShopDetail'}})">
-				<image class="img" src="../../static/images/mall-img1.png" alt="" />
-				<view class="tit avoidOverflow2">墨西哥牛油8枚装单果200g左右</view>
-				<view class="price">285</view>
+			<view class="item-lis" v-for="(item,index) in mainData" :key="index" :data-id="item.id"
+			@click="Router.navigateTo({route:{path:'/pages/jiFenShopDetail/jiFenShopDetail?id='+$event.currentTarget.dataset.id}})">
+				<image class="img" :src="item.mainImg&&item.mainImg[0]?item.mainImg[0].url:''" alt="" />
+				<view class="tit avoidOverflow2">{{item.title}}</view>
+				<view class="price">{{item.price}}</view>
 			</view>
 		</view>
 	</view>
@@ -17,44 +18,60 @@
 		data() {
 			return {
 				Router:this.$Router,
-				showView: false,
-				score:'',
-				wx_info:{},
-				is_show:false,
-				produtList:[
-					{},{},{},{},{},{}
-				]
+				mainData:[]
 			}
 		},
 
-		onLoad() {
+		onLoad(options) {
 			const self = this;
+			self.paginate = self.$Utils.cloneForm(self.$AssetsConfig.paginate);
 			self.$Utils.loadAll(['getMainData'], self);
+		},
+		
+		onReachBottom() {
+			console.log('onReachBottom')
+			const self = this;
+			if (!self.isLoadAll && uni.getStorageSync('loadAllArray')) {
+				self.paginate.currentPage++;
+				self.getMainData()
+			};
 		},
 
 		methods: {
-			getMainData() {
+			
+			getMainData(isNew) {
 				const self = this;
-				const postData = {};
-				postData.tokenFuncName = 'getProjectToken';
-			
-				const callback = (res) => {
-					if (res.solely_code == 100000 && res.info.data[0]) {
-						self.mainData = res.info.data;
-					} else {
-						self.$Utils.showToast(res.msg, 'none')
-					};
-					self.$Utils.finishFunc('getMainData');
-			
+				if (isNew) {
+					self.mainData = [];
+					self.paginate = {
+						count: 0,
+						currentPage: 1,
+						is_page: true,
+						pagesize: 5	
+					}
 				};
-				self.$apis.orderGet(postData, callback);
-			
-			}
+				const postData = {};
+				postData.paginate = self.$Utils.cloneForm(self.paginate);
+				postData.searchItem = {
+					thirdapp_id: 2,
+				};
+				const callback = (res) => {
+					if (res.info.data.length > 0) {
+						self.mainData.push.apply(self.mainData, res.info.data);
+					}
+					console.log('self.mainData', self.mainData)
+					self.$Utils.finishFunc('getMainData');
+				};
+				self.$apis.productGet(postData, callback);
+			},
 		}
 	}
 </script>
 
 <style>
+	page{
+		background: #f5f5f5;
+	}
 	.proTopImg{padding: 20rpx 4%;flex-wrap: wrap; background: #F5F5F5;}
 	.proTopImg .item-lis{ width: 330rpx; overflow: hidden;background: #fff;margin: 15rpx 0; position: relative;border-radius: 10rpx; padding-bottom: 20rpx;}
 	.proTopImg .item-lis .img{width: 100%;height: 330rpx;display: block;margin: 0 auto;}

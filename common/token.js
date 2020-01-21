@@ -21,6 +21,7 @@ class Token {
 	getProjectToken(callback,postData) { 
 		
 		var pass = true;
+		console.log('postData',postData);
 		if(postData&&postData.refreshToken){
 			uni.removeStorageSync('user_token');
 			uni.removeStorageSync('token_expire_time');
@@ -43,6 +44,9 @@ class Token {
 				info_name:'user_info',
 				token_name:'user_token'
 	        };
+			if(postData.parent_no){
+				params.parent_no = postData.parent_no
+			};
 			console.log('getProjectToken',callback)
 			if(callback){
 				this.getUserInfo(params,callback);
@@ -339,8 +343,8 @@ class Token {
                     postData.nickname = wxUserInfo.nickName;
                     postData.headImgUrl = wxUserInfo.avatarUrl;
                 };
-                if(self.g_params&&self.g_params.parent_no){
-                    postData.parent_no = self.g_params.parent_no;
+                if(params&&params.parent_no){
+                    postData.parent_no = params.parent_no;
                     console.log(self.g_params)
                 };
                 if(self.g_params&&self.g_params.relation_user){

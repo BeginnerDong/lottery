@@ -17,6 +17,18 @@ export default {
 		};
 		http.HTTP(allParams);
 	},
+	
+	getQrCode(param, callback) {
+		var allParams = {
+			url: 'Base/Qr/ProgramQrGet',
+			type: 'post',
+			data: param,
+			sCallback: function(data) {
+				callback && callback(data);
+			}
+		};
+		http.HTTP(allParams);
+	},
 
 	registerSuper(param, callback) {
 
@@ -30,7 +42,21 @@ export default {
 		};
 		http.HTTP(allParams);
 	},
-
+	
+	WxFormIdAdd(form_id, end_time) {
+		var allParams = {
+			url: 'Common/WxFormId/add',
+			type: 'post',
+			data: {
+				tokenFuncName: 'getProjectToken',
+				data:{
+					form_id: form_id,
+					end_time: end_time,
+				}
+			},
+		};
+		http.HTTP(allParams);
+	},
 
 	bindShop(param, callback) {
 

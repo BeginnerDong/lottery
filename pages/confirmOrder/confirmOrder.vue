@@ -1,14 +1,15 @@
 <template>
 	<view class="" >
-
 		<view style="background: #fff;">
-			
 			<view class="cfmSetAdrs flexRowBetween" style="align-items: normal; border-bottom: 2rpx solid #e7e7e7;">
 				<view class="yy-title">提货门店</view>
 				<view class="yy-adrs flexRowBetween">
-					<view class="cont font13">
-						<view class="name" >门店名称门店名称&nbsp;&nbsp;&nbsp;&nbsp;15689795323</view>
-						<view class="" >陕西省西安市雁塔区高新大都荟</view>
+					<view class="cont font13" v-if="addressData.name">
+						<view class="name" >{{addressData.name}}&nbsp;&nbsp;&nbsp;&nbsp;{{addressData.phone}}</view>
+						<view class="" >{{addressData.address}}</view>
+					</view>
+					<view class="cont" v-else>
+						请选择提货门店
 					</view>
 					<view class="arrow" @click="Router.navigateTo({route:{path:'/pages/shopAddress/shopAddress'}})">
 						<image class="arrowR" src="../../static/images/home-icon3.png" alt=""/>
@@ -17,15 +18,15 @@
 			</view>
 			
 			<view class="ind_proList">
-				<view class="item flexRowBetween" v-for="(item,index) in proListDate" :key="index">
+				<view class="item flexRowBetween" v-for="(item,index) in mainData.product" :key="index">
 					<view class="ll">
-						<image src="../../static/images/img1.png" mode=""></image>
+						<image :src="item.product&&item.product.mainImg&&item.product.mainImg[0]?item.product.mainImg[0].url:''" mode=""></image>
 					</view>
 					<view class="rr">
-						<view class="avoidOverflow2 title">墨西哥牛油果8枚单果200g左右墨西哥牛油果</view>
+						<view class="avoidOverflow2 title">{{item.product?item.product.title:''}}</view>
 						<view class="money flexRowBetween">
 							<view class="flexRowBetween">
-								<view class="price">{{item.price}}</view>
+								<view class="price">{{item.product?item.product.price:''}}</view>
 								<view class="numBox" style="position: absolute; right: 0; bottom: 0;">
 									<view @click="counter(index,'-')">-</view>
 									<view class="num">{{item.count}}</view>
@@ -51,54 +52,193 @@
 		data() {
 			return {
 				Router:this.$Router,
-				proListDate:[
-					{
-						count:1,
-						price:68
-					},{
-						count:1,
-						price:50
-					}
-				],
-				totalPrice:118
+				Utils: this.$Utils,
+				addressData:{},
+				mainData:[],
+				totalPrice:0,
+				userInfoData:{},
+				specialProvince:[],
+				totalScore:0
 			}
 		},
 
 		onLoad(options) {
-			uni.setStorageSync('canClick', true);
+			const self = this;
+			uni.setStorageSync('canClick',true);
+			self.mainData = uni.getStorageSync('payPro');
+			console.log('self.data.mainData', self.mainData);
+			const callback = (res) =>{
+				self.$Utils.loadAll(['getUserInfoData'], self);	
+			};
+			self.$Token.getProjectToken(callback,{refreshToken:true})
+			
+			self.countTotalPrice();
 		},
 
 		onShow() {
 			const self = this;
-			document.title = '确认订单'
+			if(uni.getStorageSync('choosedAddressData')){
+				self.addressData = uni.getStorageSync('choosedAddressData')
+			}
 		},
 
 		methods: {
-			change(num){
+			
+			
+			formIdAdd(e) {
 				const self = this;
-				if(num!=self.num){
-					self.num = num
+				console.log(e)
+				self.$apis.WxFormIdAdd(e.detail.formId, Date.parse(new Date()) / 1000 + 7 * 86400);
+			},
+			
+			getUserInfoData() {
+				const self = this;
+				const postData = {};
+				postData.searchItem = {
+					user_no:uni.getStorageSync('user_info').user_no
+				};		
+				postData.tokenFuncName = 'getProjectToken';
+				const callback = (res) => {
+					if (res.info.data.length > 0) {
+						self.userInfoData=res.info.data[0];	
+					} else {
+						self.$Utils.showToast(res.msg,'none');
+					};
+					self.$Utils.finishFunc('getUserInfoData');
+				};
+				self.$apis.userInfoGet(postData, callback);
+			},	
+			
+			submit(){
+				const self = this;
+				uni.setStorageSync('canClick',false);
+				/* if(parseFloat(self.userInfoData.score)<parseFloat(self.totalScore)){
+					uni.setStorageSync('canClick',true);
+					self.$Utils.showToast('积分不足','none');
+					return
+				}
+				self.addOrder() */
+				if(JSON.stringify(self.addressData) == '{}'){
+					uni.setStorageSync('canClick',true);
+					self.$Utils.showToast('请选择提货门店','none')
+				}else{
+					if(parseFloat(self.userInfoData.score)<parseFloat(self.totalScore)){
+						uni.setStorageSync('canClick',true);
+						self.$Utils.showToast('积分不足','none');
+						return
+					}
+					self.addOrder()
 				}
 			},
 			
-			counter(index,type) {
-				const self = this;
-				
-				if (type == '+') {
-					self.proListDate[index].count++;
-				} else {
-					if (self.proListDate[index].count > 1) {
-						self.proListDate[index].count--;
-					}
+			addOrder() {
+				const self = this;					
+				const postData = self.$Utils.cloneForm(self.mainData)
+				postData.tokenFuncName = 'getProjectToken';	
+				postData.data = {
+					shop_no:self.addressData.user_no
 				};
-				self.$Utils.setStorageArray('cartData', self.proListDate[index], 'id', 999);
+				const callback = (res) => {
+					if (res && res.solely_code == 100000) {
+						self.orderId = res.info.id;
+						self.pay()
+					} else {		
+						uni.setStorageSync('canClick', true);
+						uni.showToast({
+							title: res.msg,
+							duration: 2000
+						});
+					};		
+				};
+				self.$apis.addOrder(postData, callback);
+			},
+			
+			
+			pay(order_id) {
+				const self = this;	
+				const postData = {};	
+				postData.score = {
+					price:self.totalPrice
+				};
+				postData.tokenFuncName = 'getProjectToken',
+				postData.searchItem = {
+					id: self.orderId
+				};	
+				const callback = (res) => {
+					if (res.solely_code == 100000) {
+						uni.setStorageSync('canClick', true);
+						if (res.info) {
+							const payCallback = (payData) => {
+								console.log('payData', payData)
+								if (payData == 1) {
+									uni.showToast({
+										title: '支付成功',
+										duration: 1000,
+										success: function() {
+											
+										}
+									});
+									setTimeout(function() {
+										self.$Router.redirectTo({route:{path:'/pages/user_exchange/user_exchange'}})
+									}, 1000);
+								} else {
+									uni.setStorageSync('canClick', true);
+									uni.showToast({
+										title: '支付失败',
+										duration: 2000
+									});
+								};
+							};
+							self.$Utils.realPay(res.info, payCallback);
+						} else {
+							
+							uni.showToast({
+								title: '支付成功',
+								duration: 1000,
+								success: function() {
+									
+								}
+							});
+							setTimeout(function() {
+								self.$Router.redirectTo({route:{path:'/pages/user_exchange/user_exchange'}})
+							}, 1000);
+						};
+					} else {
+						uni.setStorageSync('canClick', true);
+						uni.showToast({
+							title: res.msg,
+							duration: 2000
+						});
+					};
+				};
+				self.$apis.pay(postData, callback);
+			},
+			
+	
+			
+			counter(index,type) {
+				const self = this;			
+				if (type == '+') {
+					self.mainData.product[index].count++;
+				} else {
+					if (self.mainData.product[index].count > 1) {
+						self.mainData.product[index].count--;
+					}
+				};			
 				self.countTotalPrice();
 			},
 			
-			getMainData() {
+			countTotalPrice() {
 				const self = this;
-				self.$apis.userGet(postData, callback);
-			}
+				self.totalPrice = 0;		
+				self.totalScore = 0;
+				for (var i = 0; i < self.mainData.product.length; i++) {
+					self.totalPrice += self.mainData.product[i].product.price * self.mainData.product[i].count;
+					self.totalScore += self.mainData.product[i].product.score * self.mainData.product[i].count;
+				};
+			},
+			
+			
 		}
 	}
 </script>

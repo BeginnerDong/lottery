@@ -3,7 +3,7 @@
 		<view class="myEwm">
 			<image class="pic" src="../../static/images/qr_code-img1.png" mode=""></image>
 			<view class="ewm">
-				<image src="../../static/images/myEwm.png" mode=""></image>
+				<image :src="mainData.url" mode=""></image>
 			</view>
 		</view>
 		
@@ -16,37 +16,31 @@
 		data() {
 			return {
 				Router:this.$Router,
-				showView: false,
-				score:'',
-				wx_info:{}
+				
+				mainData:{}
 			}
 		},
-		onShow() {
-			document.title = "我的二维码"
-		},
+
 		onLoad() {
 			const self = this;
 			self.$Utils.loadAll(['getMainData'], self);
 		},
 
 		methods: {
+			
 			getMainData() {
 				const self = this;
 				const postData = {};
 				postData.tokenFuncName = 'getProjectToken';
-			
+				postData.param =  uni.getStorageSync('user_info').user_no,
+				postData.ext = 'png';
 				const callback = (res) => {
-					if (res.solely_code == 100000 && res.info.data[0]) {
-						self.mainData = res.info.data;
-					} else {
-						self.$Utils.showToast(res.msg, 'none')
-					};
+					console.log(res);
+					self.mainData = res.info;
 					self.$Utils.finishFunc('getMainData');
-			
 				};
-				self.$apis.orderGet(postData, callback);
-			
-			}
+				self.$apis.getQrCommonCode(postData, callback);
+			},
 		}
 	}
 </script>

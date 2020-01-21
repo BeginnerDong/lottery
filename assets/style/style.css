@@ -178,7 +178,7 @@ input,textarea {outline: none; -webkit-box-shadow: none; box-shadow: none;-webki
 .infor-title{color: #222; font-size:30rpx; line-height: 40rpx; position: relative;padding: 30rpx 4% 0 4%;position: relative;}
 .infor-title .tt{font-weight: bold;font-size:30rpx;position: relative; z-index: 0; }
 .infor-title .more{ font-size: 26rpx; color: #999;}
-.infor-title .xian{position: absolute; top: 56rpx; left: 46rpx;width: 60rpx; height: 10rpx;background: #ff2e37; z-index: -1; }
+.infor-title .xian{position: absolute; top: 56rpx; left: 62rpx;width: 40rpx; height: 10rpx;background: #ff2e37; z-index: -1; }
 
 
 .pubTit2{ font-size: 30rpx; font-weight: bold;line-height: 50rpx;padding-top: 20rpx!important;}
